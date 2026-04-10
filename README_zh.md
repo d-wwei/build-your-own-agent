@@ -1,5 +1,7 @@
 # 从零构建你自己的 AI Agent
 
+**[English Version →](README.md)**
+
 > **我不能创造的东西，我就不理解。** — 理查德·费曼
 
 4 个生产级 Agent 项目，约 60 万行代码，拆解为 11 个架构模块和 6 个涌现行为模式。
@@ -129,5 +131,3 @@
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) — 注明出处即可自由分享和改编。
 
 ---
-
-**[English Version →](README.md)**

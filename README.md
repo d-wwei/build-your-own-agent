@@ -1,5 +1,7 @@
 # Build Your Own Agent
 
+**[中文版 →](README_zh.md)**
+
 > **What I cannot create, I do not understand.** — Richard Feynman
 
 4 production Agent projects. ~600,000 lines of code. Distilled into 11 architecture modules and 6 emergent behavior patterns.
@@ -8,7 +10,48 @@ This is a step-by-step guide to building AI Agents from scratch — not from the
 
 ## Architecture Overview
 
-![Agent Architecture Reference Model](images/architecture-overview.png)
+```mermaid
+flowchart TB
+    subgraph SE["🔒 Security / Policy Envelope — optional, Agent-unaware"]
+        direction TB
+        IF["📡 <b>Interface</b><br/>CLI · Chat Platforms · Web · API inbound · MCP inbound · ACP"]
+
+        subgraph GR["🚪 Gateway + Routing — optional, multi-user/multi-agent only"]
+            G["<b>Gateway</b><br/>Auth · Rate Limit<br/>Method Dispatch"]
+            R["<b>Routing</b><br/>Which Agent?<br/>Which Session?<br/>Binding Match"]
+        end
+
+        subgraph AC["⭐ Agent Core — the Orchestrator"]
+            direction TB
+            CORE["Conversation Loop · Context Construction · Sub-Agent Delegation · Iteration Budget<br/><i>↕ Session Store (SQLite/JSONL) · Config Store (YAML/JSON)</i>"]
+
+            subgraph PEERS[" "]
+                direction LR
+                M["🧠 <b>Model</b><br/>Provider Routing<br/>Failover Chain<br/>Prompt Cache<br/>Token Estimation<br/><i>↕ No storage</i>"]
+                T["🔧 <b>Tools</b><br/>Register · Discover<br/>Dispatch · Parallel<br/>MCP outbound<br/>Security Approval<br/><i>↕ Skill Store</i>"]
+                MEM["🧩 <b>Memory</b><br/>Dual Role:<br/>① Tool — LLM calls<br/>② Infra — Core injects<br/><i>↕ Memory Store</i>"]
+                CTX["📐 <b>Context Mgr</b><br/>Compression<br/>Tool Result Pruning<br/>Token Budget<br/><i>↕ No storage</i>"]
+            end
+        end
+    end
+
+    RT["🖥️ Runtime — local process / Docker / OpenShell sandbox / cloud"]
+    INFRA["🏗️ Infrastructure — Blueprint plan/apply · Health check · Rollback"]
+
+    IF --> GR
+    GR --> AC
+    AC ~~~ RT
+    RT ~~~ INFRA
+
+    style SE stroke:#9b59b6,stroke-width:2px,stroke-dasharray: 5 5
+    style GR stroke:#e67e22,stroke-width:2px,stroke-dasharray: 5 5
+    style AC stroke:#3498db,stroke-width:2px
+    style PEERS fill:transparent,stroke:none
+    style M fill:#1a1a2e,color:#fff,stroke:#e74c3c
+    style T fill:#1a1a2e,color:#fff,stroke:#2ecc71
+    style MEM fill:#1a1a2e,color:#fff,stroke:#f39c12
+    style CTX fill:#1a1a2e,color:#fff,stroke:#9b59b6
+```
 
 The first thing we learned: **Agent architecture is not layered. It's Hub-and-Spoke.** Agent Core sits at the center as the orchestrator. Model, Tools, Memory, and Context Manager orbit around it as peer services.
 
@@ -94,15 +137,49 @@ The real magic. These capabilities don't exist as classes or modules — they **
 
 ## Minimum Viable vs Full Deployment
 
-![Minimum Viable Agent vs Full Deployment](images/minimum-vs-full.png)
+```mermaid
+flowchart LR
+    subgraph MVA["🟢 Minimum Viable Agent"]
+        direction TB
+        A1["Interface — CLI"]
+        A2["Agent Core + Session Store"]
+        A3["Model — stateless"]
+        A4["Tools + Skill Store"]
+        A5["Memory + Memory Store — optional"]
+        A6["Context Manager — stateless"]
+        A1 --> A2
+        A2 --> A3 & A4 & A5 & A6
+    end
+
+    subgraph FULL["🟠 Full Deployment"]
+        direction TB
+        B0["Security Envelope"]
+        B1["Interface — multi-channel + ACP"]
+        B2["Gateway + Routing"]
+        B3["Agent Core + Session/Config"]
+        B4["Model · Tools · Memory · Context<br/><i>each with vertical storage</i>"]
+        B5["Runtime + Infrastructure"]
+        B0 --> B1 --> B2 --> B3 --> B4 --> B5
+    end
+
+    style MVA stroke:#2ecc71,stroke-width:2px
+    style FULL stroke:#e67e22,stroke-width:2px
+```
 
 You don't need all 11 modules to start. A minimum viable Agent needs just 5 core components (left). Add the rest as your requirements grow (right). See the [Minimum Viable Agent](guides/minimum-viable-agent.md) guide for details.
 
-## Four Projects × All Modules
+## Four Projects: Who Implements What Best
 
-![Four Projects Comparison](images/four-projects-comparison.png)
-
-Every module, every project — how each one implements the architecture. See the [Four Projects Overview](comparisons/four-projects-overview.md) for the full analysis.
+| Module | Best Implementation | Why |
+|--------|-------------------|-----|
+| Agent Core | **openclaw** (cleanest) or hermes (simplest) | openclaw: Hook-based coordination. hermes: one-file approach |
+| Model | **openclaw** failover + Claude Code DI | Candidate chain + cooldown probing is production-essential |
+| Tools | hermes (simple) or **openclaw** Plugin SDK (platform) | Self-registration for solo; SDK if third parties extend |
+| Memory | **hermes** Provider ABC + openclaw dual-register | hermes: best abstraction. openclaw: best dual-role wiring |
+| Context | **Claude Code** 3-strategy or openclaw pluggable engine | 3-strategy most flexible; pluggable most extensible |
+| Gateway | **openclaw** | Only project that does it properly (WS control plane, 25+ handlers) |
+| Security | **NemoClaw** | Only project serious about it (Landlock + per-binary network + seccomp) |
+| Runtime/Infra | **NemoClaw** | Only project that built it (Blueprint plan/apply/rollback) |
 
 ## Methodology
 
@@ -127,7 +204,3 @@ Found an error? Have a better example from another Agent project? PRs welcome.
 ## License
 
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) — Share and adapt with attribution.
-
----
-
-**[中文版 →](README_zh.md)**
