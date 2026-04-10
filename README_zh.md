@@ -6,15 +6,9 @@
 
 这是一份从零构建 AI Agent 的分步指南 — 不是理论，不是框架文档，是从真实代码里提炼出来的架构模式。
 
-```
-                ╔═══════════════════════════════════════════╗
-                ║ AGENT CORE — 编排者                        ║
-                ║                                           ║
-                ║   ╱        │          │        ╲          ║
-                ║ Model    Tools     Memory   Context Mgr   ║
-                ║ (对等)    (对等)    (对等)     (对等)        ║
-                ╚═══════════════════════════════════════════╝
-```
+## 架构全景
+
+![Agent 架构参考模型](images/architecture-overview.png)
 
 第一个发现：**Agent 架构不是分层的，是 Hub-and-Spoke（中心辐射型）。** Agent Core 坐在中心编排，Model、Tools、Memory、Context Manager 作为对等服务环绕。
 
@@ -26,8 +20,8 @@
 |------|------|------|-------|---------|
 | [hermes-agent](https://github.com/NousResearch/hermes-agent) | 自进化 AI Agent | Python | ~8 万行 | 闭环学习 — 从经验中创建技能 |
 | [openclaw](https://github.com/open-claw/open-claw) | 本地优先多通道 AI 网关 | TypeScript | ~30 万行 | 插件生态 + 20 个平台 adapter |
-| NemoClaw | Agent 安全沙箱运行时 | JS/TS | ~2 万行 | Landlock + seccomp 进程级隔离 |
-| Claude Code | Anthropic 官方 CLI Agent | TS/React/Bun | ~20 万行 | 推测性执行 + 企业级工程 |
+| [NemoClaw](https://github.com/nvidia/NemoClaw) | Agent 安全沙箱运行时 | JS/TS | ~2 万行 | Landlock + seccomp 进程级隔离 |
+| [Claude Code](https://claude.ai/code) | Anthropic 官方 CLI Agent | TS/React/Bun | ~20 万行 | 推测性执行 + 企业级工程 |
 
 ## 目录
 
@@ -98,35 +92,17 @@
 
 **备考 Claude Architect 认证？** 读 [vs 认证](zh/comparisons/vs-claude-architect-cert.md) 分析。
 
-## 完整架构图
+## 最小可行 vs 完整部署
 
-```
-┌─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
-  SECURITY / POLICY ENVELOPE（可选）
-│ 文件隔离 · 网络策略 · 进程沙箱 · 凭证脱敏                        │
-│                                                                   │
-│ ┌───────────────────────────────────────────────────────────────┐ │
-│ │ INTERFACE 接口层                                               │ │
-│ │ CLI · 消息平台 · Web · API 入站 · MCP 入站                     │ │
-│ └──────────────────────────┬────────────────────────────────────┘ │
-│                             ↓                                     │
-│ ┌ ─ GATEWAY + ROUTING（可选）─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┐ │
-│   认证 · 限速 · 方法分发 · 多 Agent 路由                          │
-│ └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┬─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘ │
-│                             ↓                                     │
-│ ╔═══════════════════════════════════════════════════════════════╗ │
-│ ║ AGENT CORE — 编排者                                           ║ │
-│ ║ 对话循环 · 上下文构建 · 子 Agent 委派 · 迭代预算               ║ │
-│ ║                                                               ║ │
-│ ║   ╱          │            │            ╲                      ║ │
-│ ║ Model      Tools       Memory      Context Mgr               ║ │
-│ ║ 路由/降级   注册/分发    双重角色     压缩/裁剪                 ║ │
-│ ║            ↕ Skill      ↕ Memory                              ║ │
-│ ║             Store        Store                                ║ │
-│ ╚═══════════════════════════════════════════════════════════════╝ │
-└─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
-  Runtime（本地进程 / Docker / 沙箱）+ Infrastructure
-```
+![最小可行 Agent vs 完整部署](images/minimum-vs-full.png)
+
+你不需要 11 个模块才能开始。最小可行 Agent 只需要 5 个核心组件（左）。随着需求增长再添加其余模块（右）。详见 [最小可行 Agent](zh/guides/minimum-viable-agent.md) 指南。
+
+## 四个项目 × 全部模块
+
+![四项目横向对比](images/four-projects-comparison.png)
+
+每个模块，每个项目 — 各自怎么实现的。详见 [四项目总览](zh/comparisons/four-projects-overview.md)。
 
 ## 方法论
 

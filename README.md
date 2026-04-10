@@ -2,23 +2,17 @@
 
 > **What I cannot create, I do not understand.** — Richard Feynman
 
-4 production Agent projects. ~600,000 lines of code. Exposed down to 11 architecture modules and 6 emergent behavior patterns.
+4 production Agent projects. ~600,000 lines of code. Distilled into 11 architecture modules and 6 emergent behavior patterns.
 
 This is a step-by-step guide to building AI Agents from scratch — not from theory, not from framework docs, but from patterns extracted from real, working code.
 
-```
-                ╔═══════════════════════════════════════════╗
-                ║ AGENT CORE — the orchestrator              ║
-                ║                                           ║
-                ║   ╱        │          │        ╲          ║
-                ║ Model    Tools     Memory   Context Mgr   ║
-                ║ (peer)   (peer)    (peer)     (peer)      ║
-                ╚═══════════════════════════════════════════╝
-```
+## Architecture Overview
+
+![Agent Architecture Reference Model](images/architecture-overview.png)
 
 The first thing we learned: **Agent architecture is not layered. It's Hub-and-Spoke.** Agent Core sits at the center as the orchestrator. Model, Tools, Memory, and Context Manager orbit around it as peer services.
 
-We started by drawing a neat layered diagram. The code told a different story. After 5 rounds of verification and correction against all 4 codebases, we arrived at the reference model above.
+We started by drawing a neat layered diagram. The code told a different story. After 5 rounds of verification and correction against all 4 codebases, we arrived at this reference model.
 
 ## The 4 Projects We Analyzed
 
@@ -26,8 +20,8 @@ We started by drawing a neat layered diagram. The code told a different story. A
 |---------|-----------|----------|-------|----------------|
 | [hermes-agent](https://github.com/NousResearch/hermes-agent) | Self-evolving AI Agent | Python | ~80K | Learning loop — creates skills from experience |
 | [openclaw](https://github.com/open-claw/open-claw) | Local-first multi-channel AI gateway | TypeScript | ~300K | Plugin ecosystem + 20 platform adapters |
-| NemoClaw | Agent security sandbox runtime | JS/TS | ~20K | Landlock + seccomp process-level isolation |
-| Claude Code | Anthropic's official CLI Agent | TS/React/Bun | ~200K | Speculative execution + enterprise engineering |
+| [NemoClaw](https://github.com/nvidia/NemoClaw) | Agent security sandbox runtime | JS/TS | ~20K | Landlock + seccomp process-level isolation |
+| [Claude Code](https://claude.ai/code) | Anthropic's official CLI Agent | TS/React/Bun | ~200K | Speculative execution + enterprise engineering |
 
 ## Table of Contents
 
@@ -98,36 +92,17 @@ The real magic. These capabilities don't exist as classes or modules — they **
 
 **Studying for Claude Architect certification?** Read the [vs Certification](comparisons/vs-claude-architect-cert.md) analysis.
 
-## Full Architecture
+## Minimum Viable vs Full Deployment
 
-```
-┌─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
-  SECURITY / POLICY ENVELOPE (optional)
-│ File isolation · Network policy · Process sandbox · Credentials  │
-│                                                                   │
-│ ┌───────────────────────────────────────────────────────────────┐ │
-│ │ INTERFACE                                                     │ │
-│ │ CLI · Chat platforms · Web · API inbound · MCP inbound        │ │
-│ └──────────────────────────┬────────────────────────────────────┘ │
-│                             ↓                                     │
-│ ┌ ─ GATEWAY + ROUTING (optional) ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┐ │
-│   Auth · Rate limit · Method dispatch · Multi-agent routing      │
-│ └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┬─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘ │
-│                             ↓                                     │
-│ ╔═══════════════════════════════════════════════════════════════╗ │
-│ ║ AGENT CORE — the orchestrator                                 ║ │
-│ ║ Conversation loop · Context construction · Sub-agent · Budget ║ │
-│ ║                                                               ║ │
-│ ║   ╱          │            │            ╲                      ║ │
-│ ║ Model      Tools       Memory      Context Mgr               ║ │
-│ ║ Routing    Register    Dual role    Compression               ║ │
-│ ║ Failover   Dispatch    Tool+Infra   Budget mgmt              ║ │
-│ ║            ↕ Skill     ↕ Memory                               ║ │
-│ ║             Store       Store                                 ║ │
-│ ╚═══════════════════════════════════════════════════════════════╝ │
-└─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
-  Runtime (local process / Docker / sandbox) + Infrastructure
-```
+![Minimum Viable Agent vs Full Deployment](images/minimum-vs-full.png)
+
+You don't need all 11 modules to start. A minimum viable Agent needs just 5 core components (left). Add the rest as your requirements grow (right). See the [Minimum Viable Agent](guides/minimum-viable-agent.md) guide for details.
+
+## Four Projects × All Modules
+
+![Four Projects Comparison](images/four-projects-comparison.png)
+
+Every module, every project — how each one implements the architecture. See the [Four Projects Overview](comparisons/four-projects-overview.md) for the full analysis.
 
 ## Methodology
 
